@@ -18,7 +18,7 @@ type Block struct {
 	timestamp uint64 //ブロックが照合されたときのUNIXタイムスタンプ
 }
 
-func parse(data string) (Block) {
+func Parse(data string) (Block) {
 	block := Block{}
 
 	block.number = hexstrToUint64(gjson.Get(data, "result.number").String())
