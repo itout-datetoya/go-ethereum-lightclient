@@ -1,10 +1,7 @@
 package block
 
 import (
-	"encoding/hex"
-	"errors"
-	"strings"
-	"strconv"
+	"itout/go-ethereum-lightclient/util"
 	"github.com/tidwall/gjson"
 )
 
@@ -21,35 +18,13 @@ type Block struct {
 func Parse(data string) (Block) {
 	block := Block{}
 
-	block.number = hexstrToUint64(gjson.Get(data, "result.number").String())
-	block.hash = hexstrTo32Bytes(gjson.Get(data, "result.hash").String())
-	block.parentHash = hexstrTo32Bytes(gjson.Get(data, "result.parentHash").String())
-	block.transactionsRoot = hexstrTo32Bytes(gjson.Get(data, "result.transactionsRoot").String())
-	block.stateRoot = hexstrTo32Bytes(gjson.Get(data, "result.stateRoot").String())
-	block.receiptsRoot = hexstrTo32Bytes(gjson.Get(data, "result.receiptsRoot").String())
-	block.timestamp = hexstrToUint64(gjson.Get(data, "result.timestamp").String())
+	block.number = util.HexstrToUint64(gjson.Get(data, "result.number").String())
+	block.hash = util.HexstrTo32Bytes(gjson.Get(data, "result.hash").String())
+	block.parentHash = util.HexstrTo32Bytes(gjson.Get(data, "result.parentHash").String())
+	block.transactionsRoot = util.HexstrTo32Bytes(gjson.Get(data, "result.transactionsRoot").String())
+	block.stateRoot = util.HexstrTo32Bytes(gjson.Get(data, "result.stateRoot").String())
+	block.receiptsRoot = util.HexstrTo32Bytes(gjson.Get(data, "result.receiptsRoot").String())
+	block.timestamp = util.HexstrToUint64(gjson.Get(data, "result.timestamp").String())
 
 	return block
-}
-
-func hexstrTo32Bytes(hexString string) ([32]byte) {
-	hexString = strings.TrimPrefix(hexString, "0x")
-
-	byteArray, err := hex.DecodeString(hexString)
-	if err != nil {
-		panic(err)
-	}
-
-	if len(byteArray) != 32 {
-		panic(errors.New("hexString is not 32 bytes"))
-	} else {
-		hash := [32]byte{}
-		copy(hash[:], byteArray)
-		return hash
-	}
-}
-
-func hexstrToUint64(hexString string) (uint64) {
-	hex, _ := strconv.ParseInt(hexString, 0, 64)
-	return uint64(hex)
 }
