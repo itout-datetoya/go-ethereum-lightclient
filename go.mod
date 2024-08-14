@@ -4,8 +4,10 @@ go 1.22.5
 
 require (
 	github.com/golang/snappy v0.0.4 // indirect
+	github.com/holiman/uint256 v1.2.0 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/montanaflynn/stats v0.7.1 // indirect
+	github.com/protolambda/ztyp v0.2.2 // indirect
 	github.com/tidwall/gjson v1.17.3 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
