@@ -2,25 +2,32 @@ package beacon
 
 import (
 	"itout/go-ethereum-lightclient/util"
+	"itout/go-ethereum-lightclient/types"
+	"itout/go-ethereum-lightclient/rpc"
 	"github.com/tidwall/gjson"
+	"github.com/protolambda/ztyp/tree"
+	"github.com/protolambda/ztyp/view"
 )
 
 type BeaconBlock struct {
 	slot uint64
-	hash [32]byte
-	parentHash [32]byte
-	stateRoot [32]byte
-	bodyRoot [32]byte
+	root [32]byte
+	blockheader types.BeaconBlockHeader
 }
 
-func Parse(data string) (BeaconBlock) {
-	block := BeaconBlock{}
+func ParseBeaconBlockHeader(data string) (types.BeaconBlockHeader) {
+	blockHeader := types.BeaconBlockHeader{}
 
-	block.slot = util.HexstrToUint64(gjson.Get(data, "data.header.message.slot").String())
-	block.hash = util.HexstrTo32Bytes(gjson.Get(data, "data.root").String())
-	block.parentHash = util.HexstrTo32Bytes(gjson.Get(data, "data.header.message.parent_root").String())
-	block.stateRoot = util.HexstrTo32Bytes(gjson.Get(data, "data.header.message.state_root").String())
-	block.bodyRoot = util.HexstrTo32Bytes(gjson.Get(data, "data.header.message.body_root").String())
+	blockHeader.Slot = types.Slot(view.Uint64View(util.HexstrToUint64(gjson.Get(data, "data.header.message.slot").String())))
+	blockHeader.ProposerIndex = types.ValidatorIndex(view.Uint64View(util.HexstrToUint64(gjson.Get(data, "data.header.message.proposer_index").String())))
+	blockHeader.ParentRoot = tree.Root(util.HexstrTo32Bytes(gjson.Get(data, "data.header.message.parent_root").String()))
+	blockHeader.StateRoot = tree.Root(util.HexstrTo32Bytes(gjson.Get(data, "data.header.message.state_root").String()))
+	blockHeader.BodyRoot = tree.Root(util.HexstrTo32Bytes(gjson.Get(data, "data.header.message.body_root").String()))
 
-	return block
+	return blockHeader
+}
+
+func GetBeaconBlockHeader(slot uint64) (types.BeaconBlockHeader) {
+	data := rpc.GetBeaconBlockHeader(slot)
+	return ParseBeaconBlockHeader(data)
 }
