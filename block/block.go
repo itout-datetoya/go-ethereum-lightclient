@@ -2,6 +2,7 @@ package block
 
 import (
 	"itout/go-ethereum-lightclient/util"
+	"itout/go-ethereum-lightclient/rpc"
 	"github.com/tidwall/gjson"
 )
 
@@ -15,7 +16,7 @@ type Block struct {
 	timestamp uint64 //ブロックが照合されたときのUNIXタイムスタンプ
 }
 
-func Parse(data string) (Block) {
+func ParseBlock(data string) (Block) {
 	block := Block{}
 
 	block.number = util.HexstrToUint64(gjson.Get(data, "result.number").String())
@@ -27,4 +28,14 @@ func Parse(data string) (Block) {
 	block.timestamp = util.HexstrToUint64(gjson.Get(data, "result.timestamp").String())
 
 	return block
+}
+
+func GetBlockByHash(hash [32]byte) (Block) {
+	data := rpc.GetBlockByHash(hash)
+	return ParseBlock(data)
+}
+
+func GetBlockByNumber(number uint64) (Block) {
+	data := rpc.GetBlockByNumber(number)
+	return ParseBlock(data)
 }
