@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"crypto/sha256"
 	"itout/go-ethereum-lightclient/types"
 	"github.com/protolambda/ztyp/tree"
 )
@@ -21,4 +22,29 @@ func computeForkDataRoot(currentVersion types.Version, genesisValidatorRoot tree
 	hfn := tree.GetHashFn()
 	fData := types.ForkData{CurrentVersion: currentVersion, GenesisValidatorsRoot: genesisValidatorRoot}
 	return fData.HashTreeRoot(hfn)
+}
+
+func IsValidMerkleBranch(leaf [32]byte, branch [][32]byte, index uint64, root tree.Root) (bool) {
+	hasher := sha256.New()
+	for _, sibling := range branch {
+		hasher.Reset()
+		if index&1 == 0 {
+			hasher.Write(leaf[:])
+			hasher.Write(sibling[:])
+		} else {
+			hasher.Write(sibling[:])
+			hasher.Write(leaf[:])
+		}
+		hasher.Sum(leaf[:0])
+		if index >>= 1; index == 0 {
+			return false
+		}
+	}
+	if index != 1 {
+		return false
+	}
+	if tree.Root(leaf) != root {
+		return false
+	}
+	return true
 }
