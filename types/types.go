@@ -14,6 +14,7 @@ type BeaconBlockHeader struct {
 }
 
 type Slot view.Uint64View
+type Epoch view.Uint64View
 
 type ValidatorIndex view.Uint64View
 
