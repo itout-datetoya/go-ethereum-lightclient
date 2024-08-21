@@ -53,8 +53,33 @@ func (p BLSPubkey) HashTreeRoot(hFn tree.HashFn) (tree.Root) {
 	return hFn(a, b)
 }
 
+type SyncCommitteeBits []byte
+
+func (li SyncCommitteeBits) ByteLength(spec *configs.Spec) uint64 {
+	return (uint64(spec.SYNC_COMMITTEE_SIZE) + 7) / 8
+}
+
+func (li *SyncCommitteeBits) FixedLength(spec *configs.Spec) uint64 {
+	return (uint64(spec.SYNC_COMMITTEE_SIZE) + 7) / 8
+}
+
+func (li SyncCommitteeBits) HashTreeRoot(spec *configs.Spec, hFn tree.HashFn) common.Root {
+	if li == nil {
+		return view.BitVectorType(uint64(spec.SYNC_COMMITTEE_SIZE)).New().HashTreeRoot(hFn)
+	}
+	return hFn.BitVectorHTR(li)
+}
+
+func (li SyncCommitteeBits) GetBit(i uint64) bool {
+	return util.GetBitFromBytes(li, i)
+}
+
+func (li SyncCommitteeBits) SetBit(i uint64, v bool) {
+	util.SetBitToBytes(li, i, v)
+}
+
 type SyncAggregate struct {
-	syncCommitteeBits []bool
+	syncCommitteeBits SyncCommitteeBits
 	syncCommitteeSig blsu.Signature
 }
 

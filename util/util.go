@@ -29,3 +29,14 @@ func HexstrToUint64(hexString string) (uint64) {
 	return uint64(hex)
 }
 
+func GetBitFromBytes(b []byte, i uint64) bool {
+	return (b[i>>3]>>(i&7))&1 == 1
+}
+
+func SetBitToBytes(b []byte, i uint64, v bool) {
+	if bit := byte(1) << (i & 7); v {
+		b[i>>3] |= bit
+	} else {
+		b[i>>3] &^= bit
+	}
+}
