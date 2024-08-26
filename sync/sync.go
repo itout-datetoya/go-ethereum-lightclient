@@ -3,6 +3,7 @@ package sync
 import (
 	"fmt"
 	"errors"
+	"math/bits"
 	"itout/go-ethereum-lightclient/util"
 	"itout/go-ethereum-lightclient/types"
 	"itout/go-ethereum-lightclient/rpc"
@@ -20,6 +21,7 @@ const SYNC_COMMITTEE_INDEX = 54
 var BLSPubkeyType = view.BasicVectorType(view.ByteType, 48)
 
 type BLSPubkey [48]byte
+type BLSSignature [96]byte
 type SyncCommitteePubkeys []BLSPubkey
 
 func (a SyncCommitteePubkeys) ByteLength(spec *configs.Spec) uint64 {
@@ -78,9 +80,17 @@ func (li SyncCommitteeBits) SetBit(i uint64, v bool) {
 	util.SetBitToBytes(li, i, v)
 }
 
+func (li SyncCommitteeBits) PopCount() uint64 {
+	count := 0
+	for _, b := range li {
+		count += bits.OnesCount8(uint8(b))
+	}
+	return uint64(count)
+}
+
 type SyncAggregate struct {
 	syncCommitteeBits SyncCommitteeBits
-	syncCommitteeSig blsu.Signature
+	syncCommitteeSig BLSSignature
 }
 
 type Bootstrap struct {
@@ -116,4 +126,55 @@ func InitStore(trustedRoot tree.Root, bootstrap Bootstrap) (Store, error) {
 	}
 
 	return Store{bootstrap.header, bootstrap.syncCommittee, SyncCommittee{}}, nil
+}
+
+func (store *Store) UpdateStore(update Update, spec *configs.Spec) error {
+	if view.Uint64View(update.syncAggregate.syncCommitteeBits.PopCount()) < spec.MIN_SYNC_COMMITTEE_PARTICIPANTS {
+		return errors.New("Error:insufficient participants")
+	}
+
+	if store.header.Slot >= update.attestedHeader.Slot {
+		return errors.New("Error:previous attested header")
+	}
+
+	syncCommittee := SyncCommittee{}
+
+	if spec.SlotToPeriod(store.header.Slot) == spec.SlotToPeriod(update.attestedHeader.Slot) {
+		syncCommittee = store.currentSyncCommittee
+	} else {
+		syncCommittee = store.nextSyncCommittee
+	}
+
+	paticipantPubkeys := []*blsu.Pubkey{}
+	for i, data := range syncCommittee.pubkeys {
+		if update.syncAggregate.syncCommitteeBits.GetBit(uint64(i)) {
+			serialisedPubkey := [48]byte(data)
+			pubkey := blsu.Pubkey{}
+			pubkey.Deserialize(&serialisedPubkey)
+			paticipantPubkeys = append(paticipantPubkeys, &pubkey)
+		}
+	}
+
+	forkVersionSlot := max(update.attestedHeader.Slot, types.Slot(1)) - types.Slot(1)
+	forkVersion := spec.ForkVersion(forkVersionSlot)
+	domain := helper.ComputeDomain(types.DomainType(configs.DOMAIN_SYNC_COMMITTEE), forkVersion, configs.GENESIS_VALIDATORS_ROOT)
+	signingRoot := helper.ComputeSigningRoot(update.attestedHeader, domain)
+	
+	serialisedSig := [96]byte(update.syncAggregate.syncCommitteeSig)
+	sig := blsu.Signature{}
+	sig.Deserialize(&serialisedSig)
+
+	if !blsu.FastAggregateVerify(paticipantPubkeys, signingRoot[:], &sig) {
+		return errors.New("Error:wrong signature")
+	}
+
+	store.header = update.attestedHeader
+	if spec.SlotToPeriod(store.header.Slot) == spec.SlotToPeriod(update.attestedHeader.Slot) {
+		store.nextSyncCommittee = update.nextSyncCommittee
+	} else if spec.SlotToPeriod(store.header.Slot) + 1 == spec.SlotToPeriod(update.attestedHeader.Slot) {
+		store.currentSyncCommittee = store.nextSyncCommittee
+		store.nextSyncCommittee = update.nextSyncCommittee
+	}
+	
+	return nil
 }
