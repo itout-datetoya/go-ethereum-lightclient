@@ -1,6 +1,7 @@
 package types
 
 import (
+	"itout/go-ethereum-lightclient/configs"
 	"github.com/protolambda/ztyp/tree"
 	"github.com/protolambda/ztyp/view"
 )
@@ -25,7 +26,7 @@ type SigningData struct {
 
 type Domain []byte
 
-type DomainType []byte
+type DomainType configs.BLSDomainType
 
 type ForkData struct {
 	CurrentVersion Version

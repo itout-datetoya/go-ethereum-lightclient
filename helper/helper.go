@@ -14,8 +14,8 @@ func ComputeSigningRoot(b types.BeaconBlockHeader, domain types.Domain) tree.Roo
 }
 
 func ComputeDomain(domainType types.DomainType, forkVersion types.Version, genesisValidatorsRoot tree.Root) types.Domain {
-    forkDataRoot := computeForkDataRoot(forkVersion, genesisValidatorsRoot)
-    return types.Domain(append(domainType, forkDataRoot[:28]...))
+    forkDataRoot := ComputeForkDataRoot(forkVersion, genesisValidatorsRoot)
+    return types.Domain(append(domainType[:], forkDataRoot[:28]...))
 }
 
 func ComputeForkDataRoot(currentVersion types.Version, genesisValidatorRoot tree.Root) tree.Root {
