@@ -7,6 +7,17 @@ import (
 	"strconv"
 )
 
+func HexstrToBytes(hexString string) ([]byte) {
+	hexString = strings.TrimPrefix(hexString, "0x")
+
+	byteArray, err := hex.DecodeString(hexString)
+	if err != nil {
+		panic(err)
+	}
+
+	return byteArray
+}
+
 func HexstrTo32Bytes(hexString string) ([32]byte) {
 	hexString = strings.TrimPrefix(hexString, "0x")
 
