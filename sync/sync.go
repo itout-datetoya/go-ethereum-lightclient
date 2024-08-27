@@ -99,6 +99,39 @@ type Bootstrap struct {
 	syncCommitteeBranch [][32]byte
 }
 
+func ParseBootstrap(data string) (Bootstrap) {
+	bootstrap := Bootstrap{}
+
+	bootstrap.header.Slot = types.Slot(view.Uint64View(util.HexstrToUint64(gjson.Get(data, "data.header.beacon.slot").String())))
+	bootstrap.header.ProposerIndex = types.ValidatorIndex(view.Uint64View(util.HexstrToUint64(gjson.Get(data, "data.header.beacon.proposer_index").String())))
+	bootstrap.header.ParentRoot = tree.Root(util.HexstrTo32Bytes(gjson.Get(data, "data.header.beacon.parent_root").String()))
+	bootstrap.header.StateRoot = tree.Root(util.HexstrTo32Bytes(gjson.Get(data, "data.header.beacon.state_root").String()))
+	bootstrap.header.BodyRoot = tree.Root(util.HexstrTo32Bytes(gjson.Get(data, "data.header.beacon.body_root").String()))
+	
+	strPubkeys := gjson.Get(data, "data.current_sync_committee.pubkeys").Array()
+	pubkeys := make([]BLSPubkey, 0, len(strPubkeys))
+	for _, strPubkey := range strPubkeys {
+		pubkeys = append(pubkeys, util.HexstrTo48Bytes(strPubkey.String()))
+	}
+	bootstrap.syncCommittee.pubkeys = pubkeys
+
+	bootstrap.syncCommittee.aggPubkey = util.HexstrTo48Bytes(gjson.Get(data, "data.current_sync_committee.aggregate_pubkey").String())
+
+	strBranchs := gjson.Get(data, "data.current_sync_committee_branch").Array()
+	branchs := make([][32]byte, 0, len(strBranchs))
+	for _, strBranch := range strBranchs {
+		branchs = append(branchs, util.HexstrTo32Bytes(strBranch.String()))
+	}
+	bootstrap.syncCommitteeBranch = branchs
+
+	return bootstrap
+}
+
+func GetBootstrap(hash [32]byte) (Bootstrap) {
+	data := api.GetBootstrap(hash)
+	return ParseBootstrap(data)
+}
+
 type Update struct {
 	attestedHeader types.BeaconBlockHeader
 	nextSyncCommittee SyncCommittee
@@ -145,7 +178,7 @@ func (store *Store) UpdateStore(update Update, spec *configs.Spec) error {
 		syncCommittee = store.nextSyncCommittee
 	}
 
-	paticipantPubkeys := []*blsu.Pubkey{}
+	paticipantPubkeys := make([]*blsu.Pubkey, 0, len(syncCommittee.pubkeys))
 	for i, data := range syncCommittee.pubkeys {
 		if update.syncAggregate.syncCommitteeBits.GetBit(uint64(i)) {
 			serialisedPubkey := [48]byte(data)
