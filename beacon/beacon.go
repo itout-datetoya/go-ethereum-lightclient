@@ -18,16 +18,17 @@ type BeaconBlock struct {
 func ParseBeaconBlockHeader(data string) (types.BeaconBlockHeader) {
 	blockHeader := types.BeaconBlockHeader{}
 
-	blockHeader.Slot = types.Slot(view.Uint64View(util.HexstrToUint64(gjson.Get(data, "data.header.message.slot").String())))
-	blockHeader.ProposerIndex = types.ValidatorIndex(view.Uint64View(util.HexstrToUint64(gjson.Get(data, "data.header.message.proposer_index").String())))
-	blockHeader.ParentRoot = tree.Root(util.HexstrTo32Bytes(gjson.Get(data, "data.header.message.parent_root").String()))
-	blockHeader.StateRoot = tree.Root(util.HexstrTo32Bytes(gjson.Get(data, "data.header.message.state_root").String()))
-	blockHeader.BodyRoot = tree.Root(util.HexstrTo32Bytes(gjson.Get(data, "data.header.message.body_root").String()))
+	blockHeader.Slot = types.Slot(view.Uint64View(util.HexstrToUint64(gjson.Get(data, "slot").String())))
+	blockHeader.ProposerIndex = types.ValidatorIndex(view.Uint64View(util.HexstrToUint64(gjson.Get(data, "proposer_index").String())))
+	blockHeader.ParentRoot = tree.Root(util.HexstrTo32Bytes(gjson.Get(data, "parent_root").String()))
+	blockHeader.StateRoot = tree.Root(util.HexstrTo32Bytes(gjson.Get(data, "state_root").String()))
+	blockHeader.BodyRoot = tree.Root(util.HexstrTo32Bytes(gjson.Get(data, "body_root").String()))
 
 	return blockHeader
 }
 
 func GetBeaconBlockHeader(slot uint64) (types.BeaconBlockHeader) {
-	data := api.GetBeaconBlockHeader(slot)
+	result := api.GetBeaconBlockHeader(slot)
+	data := gjson.Get(result, "data.header.message").String()
 	return ParseBeaconBlockHeader(data)
 }
