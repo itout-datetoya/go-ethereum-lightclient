@@ -18,9 +18,43 @@ func HexstrTo32Bytes(hexString string) ([32]byte) {
 	if len(byteArray) != 32 {
 		panic(errors.New("hexString is not 32 bytes"))
 	} else {
-		hash := [32]byte{}
-		copy(hash[:], byteArray)
-		return hash
+		b := [32]byte{}
+		copy(b[:], byteArray)
+		return b
+	}
+}
+
+func HexstrTo48Bytes(hexString string) ([48]byte) {
+	hexString = strings.TrimPrefix(hexString, "0x")
+
+	byteArray, err := hex.DecodeString(hexString)
+	if err != nil {
+		panic(err)
+	}
+
+	if len(byteArray) != 48 {
+		panic(errors.New("hexString is not 48 bytes"))
+	} else {
+		b := [48]byte{}
+		copy(b[:], byteArray)
+		return b
+	}
+}
+
+func HexstrTo96Bytes(hexString string) ([96]byte) {
+	hexString = strings.TrimPrefix(hexString, "0x")
+
+	byteArray, err := hex.DecodeString(hexString)
+	if err != nil {
+		panic(err)
+	}
+
+	if len(byteArray) != 96 {
+		panic(errors.New("hexString is not 96 bytes"))
+	} else {
+		b := [96]byte{}
+		copy(b[:], byteArray)
+		return b
 	}
 }
 
