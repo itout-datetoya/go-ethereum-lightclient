@@ -180,8 +180,9 @@ func ParseUpdate(data string) (Update) {
 	return update
 }
 
-func GetUpdate() (Update) {
-	data := api.GetUpdate()
+func GetUpdate(currentSlot types.Slot) (Update) {
+	period := configs.Mainnet.SlotToPeriod(currentSlot)
+	data := api.GetUpdate(period)
 	return ParseUpdate(data)
 }
 

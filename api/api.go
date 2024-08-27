@@ -124,8 +124,8 @@ func GetBootstrap(hash [32]byte) (data string) {
 	return string(body)
 }
 
-func GetUpdate() (data string) {
-	res, err := http.Get(BEACON_URL_DEFAULT + "light_client/updates")
+func GetUpdate(period uint64) (data string) {
+	res, err := http.Get(BEACON_URL_DEFAULT + "light_client/updates?start_period=" + strconv.FormatUint(period, 10) + "&count=1")
 
 	if err != nil {
 		fmt.Println("[!] " + err.Error())
