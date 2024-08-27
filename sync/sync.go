@@ -9,6 +9,7 @@ import (
 	"itout/go-ethereum-lightclient/api"
 	"itout/go-ethereum-lightclient/helper"
 	"itout/go-ethereum-lightclient/configs"
+	"itout/go-ethereum-lightclient/beacon"
 	"github.com/tidwall/gjson"
 	"github.com/protolambda/ztyp/tree"
 	"github.com/protolambda/ztyp/view"
@@ -102,11 +103,8 @@ type Bootstrap struct {
 func ParseBootstrap(data string) (Bootstrap) {
 	bootstrap := Bootstrap{}
 
-	bootstrap.header.Slot = types.Slot(view.Uint64View(util.HexstrToUint64(gjson.Get(data, "data.header.beacon.slot").String())))
-	bootstrap.header.ProposerIndex = types.ValidatorIndex(view.Uint64View(util.HexstrToUint64(gjson.Get(data, "data.header.beacon.proposer_index").String())))
-	bootstrap.header.ParentRoot = tree.Root(util.HexstrTo32Bytes(gjson.Get(data, "data.header.beacon.parent_root").String()))
-	bootstrap.header.StateRoot = tree.Root(util.HexstrTo32Bytes(gjson.Get(data, "data.header.beacon.state_root").String()))
-	bootstrap.header.BodyRoot = tree.Root(util.HexstrTo32Bytes(gjson.Get(data, "data.header.beacon.body_root").String()))
+	jsonHeader := gjson.Get(data, "data.header.beacon").String()
+	bootstrap.header = beacon.ParseBeaconBlockHeader(jsonHeader)
 	
 	strPubkeys := gjson.Get(data, "data.current_sync_committee.pubkeys").Array()
 	pubkeys := make([]BLSPubkey, 0, len(strPubkeys))
