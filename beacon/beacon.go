@@ -18,8 +18,8 @@ type BeaconBlock struct {
 func ParseBeaconBlockHeader(data string) (types.BeaconBlockHeader) {
 	blockHeader := types.BeaconBlockHeader{}
 
-	blockHeader.Slot = types.Slot(view.Uint64View(util.HexstrToUint64(gjson.Get(data, "slot").String())))
-	blockHeader.ProposerIndex = types.ValidatorIndex(view.Uint64View(util.HexstrToUint64(gjson.Get(data, "proposer_index").String())))
+	blockHeader.Slot = types.Slot(view.Uint64View(gjson.Get(data, "slot").Uint()))
+	blockHeader.ProposerIndex = types.ValidatorIndex(view.Uint64View(gjson.Get(data, "proposer_index").Uint()))
 	blockHeader.ParentRoot = tree.Root(util.HexstrTo32Bytes(gjson.Get(data, "parent_root").String()))
 	blockHeader.StateRoot = tree.Root(util.HexstrTo32Bytes(gjson.Get(data, "state_root").String()))
 	blockHeader.BodyRoot = tree.Root(util.HexstrTo32Bytes(gjson.Get(data, "body_root").String()))
