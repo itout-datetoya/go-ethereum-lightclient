@@ -140,6 +140,51 @@ type Update struct {
 	slot types.Slot
 }
 
+func ParseUpdate(data string) (Update) {
+	update := Update{}
+
+	jsonAttestedHeader := gjson.Get(data, "data.attested_header.beacon").String()
+	update.attestedHeader = beacon.ParseBeaconBlockHeader(jsonAttestedHeader)
+	
+	strPubkeys := gjson.Get(data, "data.next_sync_committee.pubkeys").Array()
+	pubkeys := make([]BLSPubkey, 0, len(strPubkeys))
+	for _, strPubkey := range strPubkeys {
+		pubkeys = append(pubkeys, util.HexstrTo48Bytes(strPubkey.String()))
+	}
+	update.nextSyncCommittee.pubkeys = pubkeys
+
+	update.nextSyncCommittee.aggPubkey = util.HexstrTo48Bytes(gjson.Get(data, "data.next_sync_committee.aggregate_pubkey").String())
+
+	strComBranchs := gjson.Get(data, "data.next_sync_committee_branch").Array()
+	comBranchs := make([][32]byte, 0, len(strComBranchs))
+	for _, strComBranch := range strComBranchs {
+		comBranchs = append(comBranchs, util.HexstrTo32Bytes(strComBranch.String()))
+	}
+	update.nextSyncCommitteeBranch = comBranchs
+
+	jsonFinalizedHeader := gjson.Get(data, "data.finalized_header.beacon").String()
+	update.finalizedHeader = beacon.ParseBeaconBlockHeader(jsonFinalizedHeader)
+
+	strFinBranchs := gjson.Get(data, "data.finality_branch").Array()
+	finBranchs := make([][32]byte, 0, len(strFinBranchs))
+	for _, strFinBranch := range strFinBranchs {
+		finBranchs = append(finBranchs, util.HexstrTo32Bytes(strFinBranch.String()))
+	}
+	update.finalityBranch = finBranchs
+
+	update.syncAggregate.syncCommitteeBits = util.HexstrToBytes(gjson.Get(data, "data.sync_aggregate.sync_committee_bits").String())
+	update.syncAggregate.syncCommitteeSig = util.HexstrTo96Bytes(gjson.Get(data, "data.sync_aggregate.sync_committee_signature").String())
+
+	update.slot = types.Slot(view.Uint64View(gjson.Get(data, "data.signature_slot").Uint()))
+
+	return update
+}
+
+func GetUpdate() (Update) {
+	data := api.GetUpdate()
+	return ParseUpdate(data)
+}
+
 type Store struct {
 	header types.BeaconBlockHeader
 	currentSyncCommittee SyncCommittee
