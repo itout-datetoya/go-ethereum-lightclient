@@ -3,7 +3,7 @@ package beacon
 import (
 	"itout/go-ethereum-lightclient/util"
 	"itout/go-ethereum-lightclient/types"
-	"itout/go-ethereum-lightclient/rpc"
+	"itout/go-ethereum-lightclient/api"
 	"github.com/tidwall/gjson"
 	"github.com/protolambda/ztyp/tree"
 	"github.com/protolambda/ztyp/view"
@@ -28,6 +28,6 @@ func ParseBeaconBlockHeader(data string) (types.BeaconBlockHeader) {
 }
 
 func GetBeaconBlockHeader(slot uint64) (types.BeaconBlockHeader) {
-	data := rpc.GetBeaconBlockHeader(slot)
+	data := api.GetBeaconBlockHeader(slot)
 	return ParseBeaconBlockHeader(data)
 }

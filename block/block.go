@@ -2,7 +2,7 @@ package block
 
 import (
 	"itout/go-ethereum-lightclient/util"
-	"itout/go-ethereum-lightclient/rpc"
+	"itout/go-ethereum-lightclient/api"
 	"github.com/tidwall/gjson"
 )
 
@@ -31,11 +31,11 @@ func ParseBlock(data string) (Block) {
 }
 
 func GetBlockByHash(hash [32]byte) (Block) {
-	data := rpc.GetBlockByHash(hash)
+	data := api.GetBlockByHash(hash)
 	return ParseBlock(data)
 }
 
 func GetBlockByNumber(number uint64) (Block) {
-	data := rpc.GetBlockByNumber(number)
+	data := api.GetBlockByNumber(number)
 	return ParseBlock(data)
 }

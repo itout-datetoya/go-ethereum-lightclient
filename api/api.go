@@ -1,4 +1,4 @@
-package rpc
+package api
 
 import (
 	"fmt"
@@ -17,7 +17,8 @@ type ReqBody struct {
 	Id string `json:"id"`
 }
 
-const URL_DEAULT = "https://mainnet.infura.io/v3/cdeb7402eca247e0a054717f350b4e50"
+const EXE_URL_DEAULT = "https://mainnet.infura.io/v3/cdeb7402eca247e0a054717f350b4e50"
+const BEACON_URL_DEFAULT = "https://docs-demo.quiknode.pro/eth/v1/beacon/"
 
 func GetBlockByHash(hash [32]byte) (data string) {
 	reqBody := ReqBody{}
@@ -34,7 +35,7 @@ func GetBlockByHash(hash [32]byte) (data string) {
 	fmt.Println("String:", reqBody)
 	fmt.Println("JSON:", string(reqBodyJson))
 	
-	res, err := http.Post(URL_DEAULT, "application/json", bytes.NewBuffer(reqBodyJson))
+	res, err := http.Post(EXE_URL_DEAULT, "application/json", bytes.NewBuffer(reqBodyJson))
 
 	if err != nil {
 		fmt.Println("[!] " + err.Error())
@@ -67,7 +68,7 @@ func GetBlockByNumber(number uint64) (data string) {
 	fmt.Println("String:", reqBody)
 	fmt.Println("JSON:", string(reqBodyJson))
 	
-	res, err := http.Post(URL_DEAULT, "application/json", bytes.NewBuffer(reqBodyJson))
+	res, err := http.Post(EXE_URL_DEAULT, "application/json", bytes.NewBuffer(reqBodyJson))
 
 	if err != nil {
 		fmt.Println("[!] " + err.Error())
@@ -86,7 +87,45 @@ func GetBlockByNumber(number uint64) (data string) {
 }
 
 func GetBeaconBlockHeader(slot uint64) (data string) {
-	res, err := http.Get(URL_DEAULT + strconv.FormatUint(slot, 10))
+	res, err := http.Get(BEACON_URL_DEFAULT + "headers/" + strconv.FormatUint(slot, 10))
+
+	if err != nil {
+		fmt.Println("[!] " + err.Error())
+	} else {
+		fmt.Println("[*] " + res.Status)
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	return string(body)
+}
+
+func GetBootstrap(hash [32]byte) (data string) {
+	res, err := http.Get(BEACON_URL_DEFAULT + "light_client/bootstrap/0x" + hex.EncodeToString(hash[:]))
+
+	if err != nil {
+		fmt.Println("[!] " + err.Error())
+	} else {
+		fmt.Println("[*] " + res.Status)
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	return string(body)
+}
+
+func GetUpdate() (data string) {
+	res, err := http.Get(BEACON_URL_DEFAULT + "light_client/updates")
 
 	if err != nil {
 		fmt.Println("[!] " + err.Error())

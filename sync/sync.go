@@ -6,7 +6,7 @@ import (
 	"math/bits"
 	"itout/go-ethereum-lightclient/util"
 	"itout/go-ethereum-lightclient/types"
-	"itout/go-ethereum-lightclient/rpc"
+	"itout/go-ethereum-lightclient/api"
 	"itout/go-ethereum-lightclient/helper"
 	"itout/go-ethereum-lightclient/configs"
 	"github.com/tidwall/gjson"
@@ -65,7 +65,7 @@ func (li *SyncCommitteeBits) FixedLength(spec *configs.Spec) uint64 {
 	return (uint64(spec.SYNC_COMMITTEE_SIZE) + 7) / 8
 }
 
-func (li SyncCommitteeBits) HashTreeRoot(spec *configs.Spec, hFn tree.HashFn) common.Root {
+func (li SyncCommitteeBits) HashTreeRoot(spec *configs.Spec, hFn tree.HashFn) tree.Root {
 	if li == nil {
 		return view.BitVectorType(uint64(spec.SYNC_COMMITTEE_SIZE)).New().HashTreeRoot(hFn)
 	}
