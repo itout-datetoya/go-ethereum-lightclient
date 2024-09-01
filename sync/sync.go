@@ -125,8 +125,8 @@ func ParseBootstrap(data string) (Bootstrap) {
 	return bootstrap
 }
 
-func GetBootstrap(hash [32]byte) (Bootstrap) {
-	data := api.GetBootstrap(hash)
+func GetBootstrap(hash [32]byte, url string) (Bootstrap) {
+	data := api.GetBootstrap(hash, url)
 	return ParseBootstrap(data)
 }
 
@@ -180,9 +180,9 @@ func ParseUpdate(data string) (Update) {
 	return update
 }
 
-func GetUpdate(currentSlot types.Slot) (Update) {
+func GetUpdate(currentSlot types.Slot, url string) (Update) {
 	period := configs.Mainnet.SlotToPeriod(currentSlot)
-	data := api.GetUpdate(period)
+	data := api.GetUpdate(period, url)
 	return ParseUpdate(data)
 }
 

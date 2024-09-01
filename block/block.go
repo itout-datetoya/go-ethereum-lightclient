@@ -30,12 +30,12 @@ func ParseBlock(data string) (Block) {
 	return block
 }
 
-func GetBlockByHash(hash [32]byte) (Block) {
-	data := api.GetBlockByHash(hash)
+func GetBlockByHash(hash [32]byte, url string) (Block) {
+	data := api.GetBlockByHash(hash, url)
 	return ParseBlock(data)
 }
 
-func GetBlockByNumber(number uint64) (Block) {
-	data := api.GetBlockByNumber(number)
+func GetBlockByNumber(number uint64, url string) (Block) {
+	data := api.GetBlockByNumber(number, url)
 	return ParseBlock(data)
 }

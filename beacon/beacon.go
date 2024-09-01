@@ -27,8 +27,8 @@ func ParseBeaconBlockHeader(data string) (types.BeaconBlockHeader) {
 	return blockHeader
 }
 
-func GetBeaconBlockHeader(slot uint64) (types.BeaconBlockHeader) {
-	result := api.GetBeaconBlockHeader(slot)
+func GetBeaconBlockHeader(slot uint64, url string) (types.BeaconBlockHeader) {
+	result := api.GetBeaconBlockHeader(slot, url)
 	data := gjson.Get(result, "data.header.message").String()
 	return ParseBeaconBlockHeader(data)
 }

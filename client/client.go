@@ -13,14 +13,14 @@ import (
 )
 
 type Client struct {
-	BaseURL string
+	BeaconBaseURL string
 	TrustedRoot string
 	Spec configs.Spec
 }
 
 func (c *Client) StartClient(ctx context.Context) error {
 	trustedRoot := util.HexstrTo32Bytes(c.TrustedRoot)
-	bootstrap := sync.GetBootstrap(trustedRoot)
+	bootstrap := sync.GetBootstrap(trustedRoot, c.BeaconBaseURL)
 	store, err := sync.InitStore(tree.Root(trustedRoot), bootstrap)
 	if err != nil {
 		return errors.New("Client failed to start")
@@ -32,7 +32,7 @@ func (c *Client) StartClient(ctx context.Context) error {
 	for {
 		select {
 		case <-ticker.C:
-			update := sync.GetUpdate(store.Header.Slot)
+			update := sync.GetUpdate(store.Header.Slot, c.BeaconBaseURL)
 			err := store.UpdateStore(update, &c.Spec)
 			if err != nil {
 				log.Printf("Error Updating data")
