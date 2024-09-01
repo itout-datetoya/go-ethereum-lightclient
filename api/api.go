@@ -17,8 +17,6 @@ type ReqBody struct {
 	Id string `json:"id"`
 }
 
-const EXE_URL_DEAULT = "https://mainnet.infura.io/v3/cdeb7402eca247e0a054717f350b4e50"
-const BEACON_URL_DEFAULT = "https://docs-demo.quiknode.pro/eth/v1/beacon/"
 
 func GetBlockByHash(hash [32]byte, url string) (data string) {
 	reqBody := ReqBody{}
@@ -106,7 +104,7 @@ func GetBeaconBlockHeader(slot uint64, url string) (data string) {
 }
 
 func GetBootstrap(hash [32]byte, url string) (data string) {
-	res, err := http.Get(url + "light_client/bootstrap/0x" + hex.EncodeToString(hash[:]))
+	res, err := http.Get(url + "light_client/bootstrap/" + hex.EncodeToString(hash[:]))
 
 	if err != nil {
 		fmt.Println("[!] " + err.Error())
