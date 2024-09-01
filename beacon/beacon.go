@@ -1,12 +1,13 @@
 package beacon
 
 import (
-	"itout/go-ethereum-lightclient/util"
-	"itout/go-ethereum-lightclient/types"
 	"itout/go-ethereum-lightclient/api"
-	"github.com/tidwall/gjson"
+	"itout/go-ethereum-lightclient/types"
+	"itout/go-ethereum-lightclient/util"
+
 	"github.com/protolambda/ztyp/tree"
 	"github.com/protolambda/ztyp/view"
+	"github.com/tidwall/gjson"
 )
 
 type BeaconBlock struct {
@@ -29,6 +30,6 @@ func ParseBeaconBlockHeader(data string) (types.BeaconBlockHeader) {
 
 func GetBeaconBlockHeader(slot uint64, url string) (types.BeaconBlockHeader) {
 	result := api.GetBeaconBlockHeader(slot, url)
-	data := gjson.Get(result, "data.header.message").String()
+	data := gjson.Get(result, "data.0.header.message").String()
 	return ParseBeaconBlockHeader(data)
 }
