@@ -187,9 +187,9 @@ func GetUpdate(currentSlot types.Slot) (Update) {
 }
 
 type Store struct {
-	header types.BeaconBlockHeader
-	currentSyncCommittee SyncCommittee
-	nextSyncCommittee SyncCommittee
+	Header types.BeaconBlockHeader
+	CurrentSyncCommittee SyncCommittee
+	NextSyncCommittee SyncCommittee
 }
 
 func InitStore(trustedRoot tree.Root, bootstrap Bootstrap) (Store, error) {
@@ -210,16 +210,16 @@ func (store *Store) UpdateStore(update Update, spec *configs.Spec) error {
 		return errors.New("Error:insufficient participants")
 	}
 
-	if store.header.Slot >= update.attestedHeader.Slot {
+	if store.Header.Slot >= update.attestedHeader.Slot {
 		return errors.New("Error:previous attested header")
 	}
 
 	syncCommittee := SyncCommittee{}
 
-	if spec.SlotToPeriod(store.header.Slot) == spec.SlotToPeriod(update.attestedHeader.Slot) {
-		syncCommittee = store.currentSyncCommittee
+	if spec.SlotToPeriod(store.Header.Slot) == spec.SlotToPeriod(update.attestedHeader.Slot) {
+		syncCommittee = store.CurrentSyncCommittee
 	} else {
-		syncCommittee = store.nextSyncCommittee
+		syncCommittee = store.NextSyncCommittee
 	}
 
 	paticipantPubkeys := make([]*blsu.Pubkey, 0, len(syncCommittee.pubkeys))
@@ -245,12 +245,12 @@ func (store *Store) UpdateStore(update Update, spec *configs.Spec) error {
 		return errors.New("Error:wrong signature")
 	}
 
-	store.header = update.attestedHeader
-	if spec.SlotToPeriod(store.header.Slot) == spec.SlotToPeriod(update.attestedHeader.Slot) {
-		store.nextSyncCommittee = update.nextSyncCommittee
-	} else if spec.SlotToPeriod(store.header.Slot) + 1 == spec.SlotToPeriod(update.attestedHeader.Slot) {
-		store.currentSyncCommittee = store.nextSyncCommittee
-		store.nextSyncCommittee = update.nextSyncCommittee
+	store.Header = update.attestedHeader
+	if spec.SlotToPeriod(store.Header.Slot) == spec.SlotToPeriod(update.attestedHeader.Slot) {
+		store.NextSyncCommittee = update.nextSyncCommittee
+	} else if spec.SlotToPeriod(store.Header.Slot) + 1 == spec.SlotToPeriod(update.attestedHeader.Slot) {
+		store.CurrentSyncCommittee = store.NextSyncCommittee
+		store.NextSyncCommittee = update.nextSyncCommittee
 	}
 	
 	return nil
