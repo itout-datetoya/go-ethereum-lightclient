@@ -39,7 +39,7 @@ func (c *Client) StartClient(ctx context.Context) error {
 			} else {
 				log.Printf("Update: Slot %d", store.Header.Slot)
 			}
-			continue
+
 		case <-ctx.Done():
 			log.Printf("Stopping client")
 			return nil
