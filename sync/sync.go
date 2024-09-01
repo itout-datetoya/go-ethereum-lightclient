@@ -183,7 +183,7 @@ func ParseUpdate(data string) (Update) {
 func GetUpdate(currentSlot types.Slot, url string) (Update) {
 	period := configs.Mainnet.SlotToPeriod(currentSlot)
 	data := api.GetUpdate(period, url)
-	return ParseUpdate(data)
+	return ParseUpdate(gjson.Get(data, "0").String())
 }
 
 type Store struct {
