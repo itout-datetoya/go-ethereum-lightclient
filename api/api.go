@@ -104,7 +104,7 @@ func GetBeaconBlockHeader(slot uint64, url string) (data string) {
 }
 
 func GetBootstrap(hash [32]byte, url string) (data string) {
-	res, err := http.Get(url + "light_client/bootstrap/" + hex.EncodeToString(hash[:]))
+	res, err := http.Get(url + "light_client/bootstrap/0x" + hex.EncodeToString(hash[:]))
 
 	if err != nil {
 		fmt.Println("[!] " + err.Error())
