@@ -87,7 +87,7 @@ func GetBlockByNumber(number uint64, url string) (data string) {
 }
 
 func GetBeaconBlockHeader(slot uint64, url string) (data string) {
-	res, err := http.Get(url + "headers/" + strconv.FormatUint(slot, 10))
+	res, err := http.Get(url + "headers?slot=" + strconv.FormatUint(slot, 10))
 
 	if err != nil {
 		fmt.Println("[!] " + err.Error())
