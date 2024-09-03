@@ -26,18 +26,31 @@ func (c *Client) StartClient(ctx context.Context) error {
 		return errors.New("Client failed to start")
 	}
 
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
+	finalityTicker := time.NewTicker(time.Second)
+	defer finalityTicker.Stop()
+	updateTicker := time.NewTicker(60 * time.Second)
+	defer updateTicker.Stop()
 
 	for {
 		select {
-		case <-ticker.C:
+		case <-finalityTicker.C:
+			update := sync.GetFinalityUpdate(c.BeaconBaseURL)
+			if store.Header.Slot < update.AttestedHeader.Slot {
+				err := store.FinalityUpdateStore(update, &c.Spec)
+				if err != nil {
+					log.Printf("%+v", err)
+				} else {
+					log.Printf("Update: Slot %d", store.Header.Slot)
+				}
+			}
+
+		case <-updateTicker.C:
 			update := sync.GetUpdate(store.Header.Slot, c.BeaconBaseURL)
 			err := store.UpdateStore(update, &c.Spec)
 			if err != nil {
-				log.Printf("Error Updating data")
+				log.Printf("%+v", err)
 			} else {
-				log.Printf("Update: Slot %d", store.Header.Slot)
+				log.Printf("Update: Sync Committee")
 			}
 
 		case <-ctx.Done():
