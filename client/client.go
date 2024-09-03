@@ -20,7 +20,10 @@ type Client struct {
 
 func (c *Client) StartClient(ctx context.Context) error {
 	trustedRoot := util.HexstrTo32Bytes(c.TrustedRoot)
-	bootstrap := sync.GetBootstrap(trustedRoot, c.BeaconBaseURL)
+	bootstrap, err := sync.GetBootstrap(trustedRoot, c.BeaconBaseURL)
+	if err != nil {
+		return err
+	}
 	store, err := sync.InitStore(tree.Root(trustedRoot), bootstrap)
 	if err != nil {
 		return errors.New("Client failed to start")
@@ -34,7 +37,11 @@ func (c *Client) StartClient(ctx context.Context) error {
 	for {
 		select {
 		case <-finalityTicker.C:
-			update := sync.GetFinalityUpdate(c.BeaconBaseURL)
+			update, err := sync.GetFinalityUpdate(c.BeaconBaseURL)
+			if err != nil {
+				log.Printf("%+v", err)
+				continue
+			}
 			if store.Header.Slot < update.AttestedHeader.Slot {
 				err := store.FinalityUpdateStore(update, &c.Spec)
 				if err != nil {
@@ -45,8 +52,12 @@ func (c *Client) StartClient(ctx context.Context) error {
 			}
 
 		case <-updateTicker.C:
-			update := sync.GetUpdate(store.Header.Slot, c.BeaconBaseURL)
-			err := store.UpdateStore(update, &c.Spec)
+			update, err := sync.GetUpdate(store.Header.Slot, c.BeaconBaseURL)
+			if err != nil {
+				log.Printf("%+v", err)
+				continue
+			}
+			err = store.UpdateStore(update, &c.Spec)
 			if err != nil {
 				log.Printf("%+v", err)
 			} else {
