@@ -204,5 +204,5 @@ func TestFinalityUpdateStore(t *testing.T) {
 	}
 	fmt.Println("Slot: ", int(store.Header.Slot))
 
-	assert.Equal(t, int(update.attestedHeader.Slot), int(store.Header.Slot))
+	assert.Equal(t, int(update.AttestedHeader.Slot), int(store.Header.Slot))
 }

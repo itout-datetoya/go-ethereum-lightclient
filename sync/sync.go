@@ -187,7 +187,7 @@ func GetUpdate(currentSlot types.Slot, url string) (Update) {
 }
 
 type FinalityUpdate struct {
-	attestedHeader types.BeaconBlockHeader
+	AttestedHeader types.BeaconBlockHeader
 	finalizedHeader types.BeaconBlockHeader
 	finalityBranch [][32]byte
 	syncAggregate SyncAggregate
@@ -198,7 +198,7 @@ func ParseFinalityUpdate(data string) (FinalityUpdate) {
 	update := FinalityUpdate{}
 
 	jsonAttestedHeader := gjson.Get(data, "data.attested_header.beacon").String()
-	update.attestedHeader = beacon.ParseBeaconBlockHeader(jsonAttestedHeader)
+	update.AttestedHeader = beacon.ParseBeaconBlockHeader(jsonAttestedHeader)
 
 	jsonFinalizedHeader := gjson.Get(data, "data.finalized_header.beacon").String()
 	update.finalizedHeader = beacon.ParseBeaconBlockHeader(jsonFinalizedHeader)
@@ -301,13 +301,9 @@ func (store *Store) FinalityUpdateStore(update FinalityUpdate, spec *configs.Spe
 		return errors.New("error:insufficient participants")
 	}
 
-	if store.Header.Slot >= update.attestedHeader.Slot {
-		return nil
-	}
-
 	syncCommittee := SyncCommittee{}
 
-	if spec.SlotToPeriod(store.Header.Slot) == spec.SlotToPeriod(update.attestedHeader.Slot) {
+	if spec.SlotToPeriod(store.Header.Slot) == spec.SlotToPeriod(update.AttestedHeader.Slot) {
 		syncCommittee = store.CurrentSyncCommittee
 	} else {
 		syncCommittee = store.NextSyncCommittee
@@ -323,10 +319,10 @@ func (store *Store) FinalityUpdateStore(update FinalityUpdate, spec *configs.Spe
 		}
 	}
 
-	forkVersionSlot := max(update.attestedHeader.Slot, types.Slot(1)) - types.Slot(1)
+	forkVersionSlot := max(update.AttestedHeader.Slot, types.Slot(1)) - types.Slot(1)
 	forkVersion := spec.ForkVersion(forkVersionSlot)
 	domain := helper.ComputeDomain(types.DomainType(configs.DOMAIN_SYNC_COMMITTEE), forkVersion, configs.GENESIS_VALIDATORS_ROOT)
-	signingRoot := helper.ComputeSigningRoot(update.attestedHeader, domain)
+	signingRoot := helper.ComputeSigningRoot(update.AttestedHeader, domain)
 	
 	serialisedSig := [96]byte(update.syncAggregate.syncCommitteeSig)
 	sig := blsu.Signature{}
@@ -339,8 +335,8 @@ func (store *Store) FinalityUpdateStore(update FinalityUpdate, spec *configs.Spe
 		// return errors.New("error:wrong signature")
 	}
 
-	store.Header = update.attestedHeader
-	if spec.SlotToPeriod(store.Header.Slot) + 1 == spec.SlotToPeriod(update.attestedHeader.Slot) {
+	store.Header = update.AttestedHeader
+	if spec.SlotToPeriod(store.Header.Slot) + 1 == spec.SlotToPeriod(update.AttestedHeader.Slot) {
 		store.CurrentSyncCommittee = store.NextSyncCommittee
 	}
 	
