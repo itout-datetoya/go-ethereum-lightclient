@@ -30,15 +30,11 @@ func GetBlockByHash(hash [32]byte, url string) (data string) {
 		fmt.Println("Error:", err)
 		return
 	}
-	fmt.Println("String:", reqBody)
-	fmt.Println("JSON:", string(reqBodyJson))
 	
 	res, err := http.Post(url, "application/json", bytes.NewBuffer(reqBodyJson))
 
 	if err != nil {
 		fmt.Println("[!] " + err.Error())
-	} else {
-		fmt.Println("[*] " + res.Status)
 	}
 	defer res.Body.Close()
 
@@ -63,15 +59,11 @@ func GetBlockByNumber(number uint64, url string) (data string) {
 		fmt.Println("Error:", err)
 		return
 	}
-	fmt.Println("String:", reqBody)
-	fmt.Println("JSON:", string(reqBodyJson))
 	
 	res, err := http.Post(url, "application/json", bytes.NewBuffer(reqBodyJson))
 
 	if err != nil {
 		fmt.Println("[!] " + err.Error())
-	} else {
-		fmt.Println("[*] " + res.Status)
 	}
 	defer res.Body.Close()
 
@@ -89,8 +81,6 @@ func GetBeaconBlockHeader(slot uint64, url string) (data string) {
 
 	if err != nil {
 		fmt.Println("[!] " + err.Error())
-	} else {
-		fmt.Println("[*] " + res.Status)
 	}
 	defer res.Body.Close()
 
@@ -108,8 +98,6 @@ func GetBootstrap(hash [32]byte, url string) (data string) {
 
 	if err != nil {
 		fmt.Println("[!] " + err.Error())
-	} else {
-		fmt.Println("[*] " + res.Status)
 	}
 	defer res.Body.Close()
 
@@ -127,8 +115,6 @@ func GetUpdate(period uint64, url string) (data string) {
 
 	if err != nil {
 		fmt.Println("[!] " + err.Error())
-	} else {
-		fmt.Println("[*] " + res.Status)
 	}
 	defer res.Body.Close()
 
@@ -146,8 +132,6 @@ func GetFinalityUpdate(url string) (data string) {
 
 	if err != nil {
 		fmt.Println("[!] " + err.Error())
-	} else {
-		fmt.Println("[*] " + res.Status)
 	}
 	defer res.Body.Close()
 
