@@ -21,7 +21,7 @@ import (
 const BEACON_URL_DEFAULT = "https://eth-holesky-beacon.blastapi.io/6cc7d5ce-13ed-4621-84b4-da82d9a464df/eth/v1/beacon/"
 
 const SLOT = 2452759
-const BEACON_HASH = "0xc5fda830d9bd7725a70e77a13d391903b3a65e0122d8b5a1dcd3aae5b0af30f8"
+const BEACON_HASH = "0x4c1282286c0c6630886dc6961e3beef0dd50f886bd029ae09a07a7c7aa89ec02"
 
 var BLANCH = []string{
 	"0x88b104b329048db035143a2905ea865a1b2b9e5981db206f0f030a00a4e5c8e0",
@@ -188,4 +188,21 @@ func (store *Store) UpdateStoreHolesky(update Update, spec *configs.Spec) error 
 	}
 	
 	return nil
+}
+
+func TestFinalityUpdateStore(t *testing.T) {
+	bootstrap := GetBootstrap(util.HexstrTo32Bytes(BEACON_HASH), BEACON_URL_DEFAULT)
+
+	store, _ := InitStore(util.HexstrTo32Bytes(BEACON_HASH), bootstrap)
+
+	update := GetFinalityUpdate(BEACON_URL_DEFAULT)
+
+	fmt.Println("Slot: ", int(store.Header.Slot))
+	err := store.FinalityUpdateStore(update, configs.Mainnet)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("Slot: ", int(store.Header.Slot))
+
+	assert.Equal(t, int(update.attestedHeader.Slot), int(store.Header.Slot))
 }

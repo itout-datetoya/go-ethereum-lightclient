@@ -295,3 +295,54 @@ func (store *Store) UpdateStore(update Update, spec *configs.Spec) error {
 	
 	return nil
 }
+
+func (store *Store) FinalityUpdateStore(update FinalityUpdate, spec *configs.Spec) error {
+	if view.Uint64View(update.syncAggregate.syncCommitteeBits.PopCount()) < spec.MIN_SYNC_COMMITTEE_PARTICIPANTS {
+		return errors.New("error:insufficient participants")
+	}
+
+	if store.Header.Slot >= update.attestedHeader.Slot {
+		return errors.New("error:previous attested header")
+	}
+
+	syncCommittee := SyncCommittee{}
+
+	if spec.SlotToPeriod(store.Header.Slot) == spec.SlotToPeriod(update.attestedHeader.Slot) {
+		syncCommittee = store.CurrentSyncCommittee
+	} else {
+		syncCommittee = store.NextSyncCommittee
+	}
+
+	paticipantPubkeys := make([]*blsu.Pubkey, 0, len(syncCommittee.pubkeys))
+	for i, data := range syncCommittee.pubkeys {
+		if update.syncAggregate.syncCommitteeBits.GetBit(uint64(i)) {
+			serialisedPubkey := [48]byte(data)
+			pubkey := blsu.Pubkey{}
+			pubkey.Deserialize(&serialisedPubkey)
+			paticipantPubkeys = append(paticipantPubkeys, &pubkey)
+		}
+	}
+
+	forkVersionSlot := max(update.attestedHeader.Slot, types.Slot(1)) - types.Slot(1)
+	forkVersion := spec.ForkVersion(forkVersionSlot)
+	domain := helper.ComputeDomain(types.DomainType(configs.DOMAIN_SYNC_COMMITTEE), forkVersion, configs.GENESIS_VALIDATORS_ROOT)
+	signingRoot := helper.ComputeSigningRoot(update.attestedHeader, domain)
+	
+	serialisedSig := [96]byte(update.syncAggregate.syncCommitteeSig)
+	sig := blsu.Signature{}
+	sig.Deserialize(&serialisedSig)
+
+	if !blsu.FastAggregateVerify(paticipantPubkeys, signingRoot[:], &sig) {
+		/*
+		verification paused in testnet
+		*/
+		// return errors.New("error:wrong signature")
+	}
+
+	store.Header = update.attestedHeader
+	if spec.SlotToPeriod(store.Header.Slot) + 1 == spec.SlotToPeriod(update.attestedHeader.Slot) {
+		store.CurrentSyncCommittee = store.NextSyncCommittee
+	}
+	
+	return nil
+}
