@@ -2,7 +2,7 @@ package sync
 
 import (
 	"errors"
-	"fmt"
+	
 	"itout/go-ethereum-lightclient/api"
 	"itout/go-ethereum-lightclient/beacon"
 	"itout/go-ethereum-lightclient/configs"
@@ -184,6 +184,43 @@ func GetUpdate(currentSlot types.Slot, url string) (Update) {
 	period := configs.Mainnet.SlotToPeriod(currentSlot)
 	data := api.GetUpdate(period, url)
 	return ParseUpdate(gjson.Get(data, "0").String())
+}
+
+type FinalityUpdate struct {
+	attestedHeader types.BeaconBlockHeader
+	finalizedHeader types.BeaconBlockHeader
+	finalityBranch [][32]byte
+	syncAggregate SyncAggregate
+	slot types.Slot
+}
+
+func ParseFinalityUpdate(data string) (FinalityUpdate) {
+	update := FinalityUpdate{}
+
+	jsonAttestedHeader := gjson.Get(data, "data.attested_header.beacon").String()
+	update.attestedHeader = beacon.ParseBeaconBlockHeader(jsonAttestedHeader)
+
+	jsonFinalizedHeader := gjson.Get(data, "data.finalized_header.beacon").String()
+	update.finalizedHeader = beacon.ParseBeaconBlockHeader(jsonFinalizedHeader)
+
+	strFinBranchs := gjson.Get(data, "data.finality_branch").Array()
+	finBranchs := make([][32]byte, 0, len(strFinBranchs))
+	for _, strFinBranch := range strFinBranchs {
+		finBranchs = append(finBranchs, util.HexstrTo32Bytes(strFinBranch.String()))
+	}
+	update.finalityBranch = finBranchs
+
+	update.syncAggregate.syncCommitteeBits = util.HexstrToBytes(gjson.Get(data, "data.sync_aggregate.sync_committee_bits").String())
+	update.syncAggregate.syncCommitteeSig = util.HexstrTo96Bytes(gjson.Get(data, "data.sync_aggregate.sync_committee_signature").String())
+
+	update.slot = types.Slot(view.Uint64View(gjson.Get(data, "data.signature_slot").Uint()))
+
+	return update
+}
+
+func GetFinalityUpdate(url string) (FinalityUpdate) {
+	data := api.GetFinalityUpdate(url)
+	return ParseFinalityUpdate(data)
 }
 
 type Store struct {

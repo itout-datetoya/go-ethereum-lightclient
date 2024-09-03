@@ -63,6 +63,12 @@ func TestGetUpdate(t *testing.T) {
 	}
 }
 
+func TestGetFinalityUpdate(t *testing.T) {
+	update := GetFinalityUpdate(BEACON_URL_DEFAULT)
+
+	assert.NotZero(t, len(update.finalityBranch))
+}
+
 func TestInitStore(t *testing.T) {
 	bootstrap := GetBootstrap(util.HexstrTo32Bytes(BEACON_HASH), BEACON_URL_DEFAULT)
 
