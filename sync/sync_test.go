@@ -44,7 +44,7 @@ const HOLESKY_GENESIS_VALIDATORS_ROOT = "0x9143aa7c615a7f7115e2b6aac319c03529df8
 
 
 func TestGetBootstrap(t *testing.T) {
-	bootstrap := GetBootstrap(util.HexstrTo32Bytes(BEACON_HASH), BEACON_URL_DEFAULT)
+	bootstrap, _ := GetBootstrap(util.HexstrTo32Bytes(BEACON_HASH), BEACON_URL_DEFAULT)
 
 	assert.Equal(t, len(BLANCH), len(bootstrap.syncCommitteeBranch))
 
@@ -54,7 +54,7 @@ func TestGetBootstrap(t *testing.T) {
 }
 
 func TestGetUpdate(t *testing.T) {
-	update := GetUpdate(types.Slot(SLOT), BEACON_URL_DEFAULT)
+	update, _ := GetUpdate(types.Slot(SLOT), BEACON_URL_DEFAULT)
 
 	assert.Equal(t, len(FIN_BLANCH), len(update.finalityBranch))
 	for i, branch := range update.finalityBranch {
@@ -64,13 +64,13 @@ func TestGetUpdate(t *testing.T) {
 }
 
 func TestGetFinalityUpdate(t *testing.T) {
-	update := GetFinalityUpdate(BEACON_URL_DEFAULT)
+	update, _ := GetFinalityUpdate(BEACON_URL_DEFAULT)
 
 	assert.NotZero(t, len(update.finalityBranch))
 }
 
 func TestInitStore(t *testing.T) {
-	bootstrap := GetBootstrap(util.HexstrTo32Bytes(BEACON_HASH), BEACON_URL_DEFAULT)
+	bootstrap, _ := GetBootstrap(util.HexstrTo32Bytes(BEACON_HASH), BEACON_URL_DEFAULT)
 
 	store, err := InitStore(util.HexstrTo32Bytes(BEACON_HASH), bootstrap)
 	if err != nil {
@@ -191,11 +191,11 @@ func (store *Store) UpdateStoreHolesky(update Update, spec *configs.Spec) error 
 }
 
 func TestFinalityUpdateStore(t *testing.T) {
-	bootstrap := GetBootstrap(util.HexstrTo32Bytes(BEACON_HASH), BEACON_URL_DEFAULT)
+	bootstrap, _ := GetBootstrap(util.HexstrTo32Bytes(BEACON_HASH), BEACON_URL_DEFAULT)
 
 	store, _ := InitStore(util.HexstrTo32Bytes(BEACON_HASH), bootstrap)
 
-	update := GetFinalityUpdate(BEACON_URL_DEFAULT)
+	update, _ := GetFinalityUpdate(BEACON_URL_DEFAULT)
 
 	fmt.Println("Slot: ", int(store.Header.Slot))
 	err := store.FinalityUpdateStore(update, configs.Mainnet)

@@ -17,7 +17,7 @@ const SLOT = 9872124
 const BEACON_HASH = "0x8eb5c9952474e9fe270e5a1823a198d2b8a5112023306dbef34418484ca7d458"
 
 func TestComputeSigningRoot(t *testing.T) {
-	attestedHeader := beacon.GetBeaconBlockHeader(SLOT, BEACON_URL_DEFAULT)
+	attestedHeader, _ := beacon.GetBeaconBlockHeader(SLOT, BEACON_URL_DEFAULT)
 
 	forkVersionSlot := max(types.Slot(SLOT), types.Slot(1)) - types.Slot(1)
 	forkVersion := configs.Mainnet.ForkVersion(forkVersionSlot)

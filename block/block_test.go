@@ -18,7 +18,7 @@ const BEACON_HASH = "0x6838b423f31b3a8a8147a340fdc0b16345ca60b89d5963f54e15169e6
 
 func TestBlock(t *testing.T) {
 	hash := util.HexstrTo32Bytes(HASH)
-	block := GetBlockByHash(hash, EXE_URL_DEAULT)
+	block, _ := GetBlockByHash(hash, EXE_URL_DEAULT)
 
 	assert.Equal(t, NUMBER, int(block.number))
 }

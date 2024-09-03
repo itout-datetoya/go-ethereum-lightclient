@@ -1,6 +1,7 @@
 package block
 
 import (
+	"errors"
 	"itout/go-ethereum-lightclient/util"
 	"itout/go-ethereum-lightclient/api"
 	"github.com/tidwall/gjson"
@@ -30,12 +31,18 @@ func ParseBlock(data string) (Block) {
 	return block
 }
 
-func GetBlockByHash(hash [32]byte, url string) (Block) {
+func GetBlockByHash(hash [32]byte, url string) (Block, error) {
 	data := api.GetBlockByHash(hash, url)
-	return ParseBlock(data)
+	if len(data) < 128 {
+		return Block{}, errors.New("error: failed GetBlock")
+	}
+	return ParseBlock(data), nil
 }
 
-func GetBlockByNumber(number uint64, url string) (Block) {
+func GetBlockByNumber(number uint64, url string) (Block, error) {
 	data := api.GetBlockByNumber(number, url)
-	return ParseBlock(data)
+	if len(data) < 128 {
+		return Block{}, errors.New("error: failed GetBlock")
+	}
+	return ParseBlock(data), nil
 }

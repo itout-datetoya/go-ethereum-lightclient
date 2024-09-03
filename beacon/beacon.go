@@ -1,6 +1,7 @@
 package beacon
 
 import (
+	"errors"
 	"itout/go-ethereum-lightclient/api"
 	"itout/go-ethereum-lightclient/types"
 	"itout/go-ethereum-lightclient/util"
@@ -28,8 +29,11 @@ func ParseBeaconBlockHeader(data string) (types.BeaconBlockHeader) {
 	return blockHeader
 }
 
-func GetBeaconBlockHeader(slot uint64, url string) (types.BeaconBlockHeader) {
+func GetBeaconBlockHeader(slot uint64, url string) (types.BeaconBlockHeader, error) {
 	result := api.GetBeaconBlockHeader(slot, url)
 	data := gjson.Get(result, "data.0.header.message").String()
-	return ParseBeaconBlockHeader(data)
+	if len(data) < 128 {
+		return types.BeaconBlockHeader{}, errors.New("error: failed GetBeaconBlockHeader")
+	}
+	return ParseBeaconBlockHeader(data), nil
 }

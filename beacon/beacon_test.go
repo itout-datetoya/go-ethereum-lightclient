@@ -16,7 +16,7 @@ const SLOT = 9862640
 const BEACON_HASH = "0x6838b423f31b3a8a8147a340fdc0b16345ca60b89d5963f54e15169e6b50f503"
 
 func TestBeacon(t *testing.T) {
-	beaconBlockHeader := GetBeaconBlockHeader(SLOT, BEACON_URL_DEFAULT)
+	beaconBlockHeader, _ := GetBeaconBlockHeader(SLOT, BEACON_URL_DEFAULT)
 
 	assert.Equal(t, SLOT, int(beaconBlockHeader.Slot))
 }

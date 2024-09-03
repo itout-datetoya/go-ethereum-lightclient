@@ -125,9 +125,12 @@ func ParseBootstrap(data string) (Bootstrap) {
 	return bootstrap
 }
 
-func GetBootstrap(hash [32]byte, url string) (Bootstrap) {
+func GetBootstrap(hash [32]byte, url string) (Bootstrap, error) {
 	data := api.GetBootstrap(hash, url)
-	return ParseBootstrap(data)
+	if len(data) < 128 {
+		return Bootstrap{}, errors.New("error: failed GetBootstrap")
+	}
+	return ParseBootstrap(data), nil
 }
 
 type Update struct {
@@ -180,10 +183,13 @@ func ParseUpdate(data string) (Update) {
 	return update
 }
 
-func GetUpdate(currentSlot types.Slot, url string) (Update) {
+func GetUpdate(currentSlot types.Slot, url string) (Update, error) {
 	period := configs.Mainnet.SlotToPeriod(currentSlot)
 	data := api.GetUpdate(period, url)
-	return ParseUpdate(gjson.Get(data, "0").String())
+	if len(data) < 128 {
+		return Update{}, errors.New("error: failed GetUpdate")
+	}
+	return ParseUpdate(gjson.Get(data, "0").String()), nil
 }
 
 type FinalityUpdate struct {
@@ -218,9 +224,12 @@ func ParseFinalityUpdate(data string) (FinalityUpdate) {
 	return update
 }
 
-func GetFinalityUpdate(url string) (FinalityUpdate) {
+func GetFinalityUpdate(url string) (FinalityUpdate, error) {
 	data := api.GetFinalityUpdate(url)
-	return ParseFinalityUpdate(data)
+	if len(data) < 128 {
+		return FinalityUpdate{}, errors.New("error: failed GetFinalityUpdate")
+	}
+	return ParseFinalityUpdate(data), nil
 }
 
 type Store struct {
