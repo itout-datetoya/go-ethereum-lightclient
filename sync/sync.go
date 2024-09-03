@@ -1,7 +1,6 @@
 package sync
 
 import (
-	"fmt"
 	"errors"
 	"math/bits"
 	"itout/go-ethereum-lightclient/util"
@@ -13,7 +12,6 @@ import (
 	"github.com/tidwall/gjson"
 	"github.com/protolambda/ztyp/tree"
 	"github.com/protolambda/ztyp/view"
-	"github.com/protolambda/ztyp/codec"
 	"github.com/protolambda/bls12-381-util"
 )
 
@@ -106,14 +104,14 @@ func ParseBootstrap(data string) (Bootstrap) {
 	jsonHeader := gjson.Get(data, "data.header.beacon").String()
 	bootstrap.header = beacon.ParseBeaconBlockHeader(jsonHeader)
 	
-	strPubkeys := gjson.Get(data, "data.current_sync_committee.pubkeys").Array()
+	strPubkeys := gjson.Get(data, "data.current_sync_committee.committee").Array()
 	pubkeys := make([]BLSPubkey, 0, len(strPubkeys))
 	for _, strPubkey := range strPubkeys {
 		pubkeys = append(pubkeys, util.HexstrTo48Bytes(strPubkey.String()))
 	}
 	bootstrap.syncCommittee.pubkeys = pubkeys
 
-	bootstrap.syncCommittee.aggPubkey = util.HexstrTo48Bytes(gjson.Get(data, "data.current_sync_committee.aggregate_pubkey").String())
+	bootstrap.syncCommittee.aggPubkey = util.HexstrTo48Bytes(gjson.Get(data, "data.current_sync_committee.aggregate_public_key").String())
 
 	strBranchs := gjson.Get(data, "data.current_sync_committee_branch").Array()
 	branchs := make([][32]byte, 0, len(strBranchs))
@@ -146,14 +144,14 @@ func ParseUpdate(data string) (Update) {
 	jsonAttestedHeader := gjson.Get(data, "data.attested_header.beacon").String()
 	update.attestedHeader = beacon.ParseBeaconBlockHeader(jsonAttestedHeader)
 	
-	strPubkeys := gjson.Get(data, "data.next_sync_committee.pubkeys").Array()
+	strPubkeys := gjson.Get(data, "data.next_sync_committee.committee").Array()
 	pubkeys := make([]BLSPubkey, 0, len(strPubkeys))
 	for _, strPubkey := range strPubkeys {
 		pubkeys = append(pubkeys, util.HexstrTo48Bytes(strPubkey.String()))
 	}
 	update.nextSyncCommittee.pubkeys = pubkeys
 
-	update.nextSyncCommittee.aggPubkey = util.HexstrTo48Bytes(gjson.Get(data, "data.next_sync_committee.aggregate_pubkey").String())
+	update.nextSyncCommittee.aggPubkey = util.HexstrTo48Bytes(gjson.Get(data, "data.next_sync_committee.aggregate_public_key").String())
 
 	strComBranchs := gjson.Get(data, "data.next_sync_committee_branch").Array()
 	comBranchs := make([][32]byte, 0, len(strComBranchs))
@@ -195,11 +193,11 @@ type Store struct {
 func InitStore(trustedRoot tree.Root, bootstrap Bootstrap) (Store, error) {
 	hfn := tree.GetHashFn()
 	if(bootstrap.header.HashTreeRoot(hfn) != trustedRoot){
-		return Store{}, errors.New("Error:wrong root")
+		return Store{}, errors.New("error:wrong root")
 	}
 
 	if !helper.IsValidMerkleBranch(bootstrap.syncCommittee.HashTreeRoot(configs.Mainnet, hfn), bootstrap.syncCommitteeBranch, SYNC_COMMITTEE_INDEX, bootstrap.header.StateRoot) {
-		return Store{}, errors.New("Error:wrong merkle branch")
+		return Store{}, errors.New("error:wrong merkle branch")
 	}
 
 	return Store{bootstrap.header, bootstrap.syncCommittee, SyncCommittee{}}, nil
@@ -207,11 +205,11 @@ func InitStore(trustedRoot tree.Root, bootstrap Bootstrap) (Store, error) {
 
 func (store *Store) UpdateStore(update Update, spec *configs.Spec) error {
 	if view.Uint64View(update.syncAggregate.syncCommitteeBits.PopCount()) < spec.MIN_SYNC_COMMITTEE_PARTICIPANTS {
-		return errors.New("Error:insufficient participants")
+		return errors.New("error:insufficient participants")
 	}
 
 	if store.Header.Slot >= update.attestedHeader.Slot {
-		return errors.New("Error:previous attested header")
+		return errors.New("error:previous attested header")
 	}
 
 	syncCommittee := SyncCommittee{}
@@ -242,7 +240,7 @@ func (store *Store) UpdateStore(update Update, spec *configs.Spec) error {
 	sig.Deserialize(&serialisedSig)
 
 	if !blsu.FastAggregateVerify(paticipantPubkeys, signingRoot[:], &sig) {
-		return errors.New("Error:wrong signature")
+		return errors.New("error:wrong signature")
 	}
 
 	store.Header = update.attestedHeader
