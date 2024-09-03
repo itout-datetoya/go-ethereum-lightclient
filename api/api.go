@@ -140,3 +140,22 @@ func GetUpdate(period uint64, url string) (data string) {
 
 	return string(body)
 }
+
+func GetFinalityUpdate(url string) (data string) {
+	res, err := http.Get(url + "light_client/finality_update")
+
+	if err != nil {
+		fmt.Println("[!] " + err.Error())
+	} else {
+		fmt.Println("[*] " + res.Status)
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	return string(body)
+}

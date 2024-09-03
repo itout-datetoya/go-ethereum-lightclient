@@ -46,3 +46,9 @@ func TestGetUpdate(t *testing.T) {
 
 	assert.Equal(t, period, configs.Mainnet.SlotToPeriod(types.Slot(gjson.Get(data, "0.data.attested_header.beacon.slot").Int())))
 }
+
+func TestGetFinalityUpdate(t *testing.T) {
+	data := GetFinalityUpdate(BEACON_URL_DEFAULT)
+
+	assert.NotZero(t, gjson.Get(data, "data.attested_header.beacon.slot").Int())
+}
