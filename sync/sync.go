@@ -247,10 +247,6 @@ func (store *Store) UpdateStore(update Update, spec *configs.Spec) error {
 		return errors.New("error:insufficient participants")
 	}
 
-	if store.Header.Slot >= update.attestedHeader.Slot {
-		return nil
-	}
-
 	syncCommittee := SyncCommittee{}
 
 	if spec.SlotToPeriod(store.Header.Slot) == spec.SlotToPeriod(update.attestedHeader.Slot) {
@@ -285,7 +281,6 @@ func (store *Store) UpdateStore(update Update, spec *configs.Spec) error {
 		// return errors.New("error:wrong signature")
 	}
 
-	store.Header = update.attestedHeader
 	if spec.SlotToPeriod(store.Header.Slot) == spec.SlotToPeriod(update.attestedHeader.Slot) {
 		store.NextSyncCommittee = update.nextSyncCommittee
 	} else if spec.SlotToPeriod(store.Header.Slot) + 1 == spec.SlotToPeriod(update.attestedHeader.Slot) {
