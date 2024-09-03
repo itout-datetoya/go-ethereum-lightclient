@@ -248,7 +248,7 @@ func (store *Store) UpdateStore(update Update, spec *configs.Spec) error {
 	}
 
 	if store.Header.Slot >= update.attestedHeader.Slot {
-		return errors.New("error:previous attested header")
+		return nil
 	}
 
 	syncCommittee := SyncCommittee{}
@@ -302,7 +302,7 @@ func (store *Store) FinalityUpdateStore(update FinalityUpdate, spec *configs.Spe
 	}
 
 	if store.Header.Slot >= update.attestedHeader.Slot {
-		return errors.New("error:previous attested header")
+		return nil
 	}
 
 	syncCommittee := SyncCommittee{}
